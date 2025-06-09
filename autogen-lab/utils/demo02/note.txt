@@ -1,0 +1,123 @@
+Team概念介绍
+在之前的课程已经使用Autogen创建了单个Agent，每个Agent都有自己擅长的职责，以下举例一些Agent
+
+报告Agent，专门负责将零散的文本组织成Markdown报告，或者是好看的Html。
+
+网页搜索Agent，专门负责从互联网上获取想要的内容
+
+文件操作Agent，专门负责对本地文件进行操作
+
+数据分析Agent，专门负责对数据进行分析
+
+在创建了一些Agent后，每个Agent都是一个专家，按照MulitAgent的思想，需要根据需求，选择合适的组织形式，合理的分配任务，高效的完成目标。这种组织形式就是Autogen中的Team的概念。
+
+Team类别介绍
+在Autogen中，默认提供了一些Team，每一种Team都有其适用的场景，没有一种Team能够即高效又通用的面对所有场景，所以需要了解每种Team的适用场景，优缺点。目前只需要先了解整个框架有哪些Team类型。在后续的课程中会按照以下顺序逐步学习，了解每种Team的优缺点。
+
+以下是Autogen中默认提供的Team，并简单介绍其工作原理。
+
+RobinGroupTeam
+
+     文档链接：[https://autogen.linsoap.social/autogen/stable/user-guide/agentchat-user-guide/tutorial/teams.html#creating-a-team]
+
+     其会按照Agent的顺序进行轮询调用Agent，可以设置终止条件暂停任务
+
+SelectGroupTeam
+
+     文档链接：[https://autogen.linsoap.social/autogen/stable/user-guide/agentchat-user-guide/selector-group-chat.html#]
+
+     其会按照给定的Prompt，使用大模型自主选择本次任务需要调用的Agent
+
+Swarm
+
+     文档链接：[https://autogen.linsoap.social/autogen/stable/user-guide/agentchat-user-guide/swarm.html]
+
+     其核心概念是赋予每个Agent具有选择谁来做下一个Agent的能力，这个能力叫作handoff，Agent可以通过使用handoff把任务交给其他Agent
+
+GroupFlow(Workflow)
+
+     文档链接：[https://autogen.linsoap.social/autogen/stable/user-guide/agentchat-user-guide/graph-flow.html]
+
+     Groupflow其实和扣子，dify，使用节点把任务串起来的方式很像，GroupFlow也会定义节点，然后将节点串联形成工作流。
+
+Magnetic-One
+
+    文档链接：[https://autogen.linsoap.social/autogen/stable/user-guide/agentchat-user-guide/magentic-one.html]
+
+    Magnetic-One是去年微软使用的一种针对于通用任务，表现较好的一种组织形式，具有一定的自主完成任务的能力。
+
+大家可以思考，在第一章提出的4个Agent，对面同一个任务，以生成一篇每日新闻报告为例，可以选择哪种Team实现目标，各种Team的表现如何，成功率，速度，健壮性如何。
+
+终止条件介绍
+在有了Agent和Team后，各个Agent可以各执其职了，但是Team和Agent不知道什么时候目标已经完成，或者是需要等待下一步的指示，可以先停一停了。这时候就需要终止条件去管理Team。
+
+在Autogen中非常多的终止条件，并且这种条件可以使用and，or，not 等逻辑运算符去自由组合终止条件，以下是常见的终止条件，在参考文档中去了解每种终止条件。
+
+
+
+参考文档：[https://autogen.linsoap.social/autogen/stable/user-guide/agentchat-user-guide/tutorial/termination.html#]
+
+
+team运行方式:
+
+
+AgentChat 支持多个团队预设：
+
+RoundRobinGroupChat：一个团队以循环方式进行群聊，参与者轮流进行（本页介绍）。教程
+
+SelectorGroupChat：在每条消息后使用 ChatCompletion 模型选择下一位发言者的团队。教程
+
+MagenticOneGroupChat：一个通用的多智能体系统，用于解决跨多个领域的开放式 Web 和基于文件的任务。教程
+
+SwarmHandoffMessage：用于在代理之间发出信号转换的团队。教程
+
+
+
+运行结果
+root@FerrW:~/autogen/learning-autogen# /root/miniconda3/envs/autogen/bin/python /root/autogen/learning-autogen/autogen-lab/utils/demo03/demo03.py
+---------- TextMessage (user) ----------
+Write a short poem about the fall season.
+---------- ThoughtEvent (primary) ----------
+
+Okay, the user asked for a short poem about fall season. They're probably looking for something concise but evocative, maybe to capture the essence of autumn in a few lines. 
+
+Hmm, fall is such a rich season with so many sensory details—color changes, crisp air, harvest, cooling temps. I should focus on one or two key imagery that feels universal. Maybe leaf colors or harvest? But the user said "short," so I need to keep it tight.
+
+Let me brainstorm: turn of the page suggests the season's passage, leaves falling, breeze, harvest moon—those are classic fall tropes. A "rust-colored sunset" paints a vivid picture, while "breeze turns cold" feels crisp and fresh. "Harvest moon" nods to the season's bounty without being redundant after mentioning reapers.
+
+The structure should mirror the season's passage—ending with a line about the moon to create a quiet, settling note. Rhyme is optional but makes it more poem-like; better keep it simple but rhythmic.
+
+User might be feeling nostalgic or just appreciating the season—no pressure, just a small creative request. No need to overthink; keep it light and beautiful.
+
+---------- TextMessage (primary) ----------
+
+The page turns, a rust-colored sunset,
+Leaves scatter to earth's soft bed cover.
+Breeze turns cold, then quiets water,
+Grass grows stoop-shoulder, grass trembles.
+
+Harvest moon hushes fields tired and hollow,
+And fearfully reapers reach for their cloaks.
+---------- ThoughtEvent (critic) ----------
+
+Okay, let's start by looking at the user's query. They asked for a short poem about fall. The assistant's response presents a poem with autumn imagery and themes. The user now wants me to imagine the thought process behind that response in natural English.
+
+First, I need to assess the user's scenario. They're asking for a poem, so they might be seeking something creative, maybe for personal enjoyment or a creative project. The assistant provided a poem with specific elements like rust-colored sunset, scattered leaves, cold breeze, harvest moon, and reapers. This suggests the user values vivid imagery and traditional fall symbols.
+
+Looking at the identity, the user could be someone looking for inspiration, perhaps a writer, student, or just someone appreciating poetry. They might want to evoke a sense of melancholy or the changing seasons. The assistant's poem includes themes of change, preparation for winter, and a certain weariness, which could resonate with someone reflecting on seasonal transitions.
+
+Now, deeper needs. The user might not just want a poem; they might seek emotional connection through the imagery. The poem touches on tired fields and fear in the heart, hinting at unspoken emotions like nostalgia or the passage of time. The assistant probably aimed to capture those feelings subtly, allowing readers to project their own experiences.
+
+Also, the query mentions feedback and approval, so maybe the user wants to engage in a back-and-forth analysis, ensuring the poem meets certain standards. The assistant's response is expected to be evaluated constructively. So, the thought process should consider how the poem aligns or diverges from those expectations.
+
+Check for technical aspects: The poem uses rhyme and meter, which suits the traditional form the user might expect. The diction is evocative, painting a clear picture. The assistant might have considered the user's request for a "short" poem, ensuring conciseness while maintaining depth.
+
+Potential unspoken needs: The user might want the poem to stir specific emotions without being too explicit. The use of terms like "stoop-shoulder" and "reapers" adds layers of meaning beyond literal interpretation, suggesting they value metaphorical language. The assistant likely aimed to balance clarity with ambiguity, inviting reader interpretation.
+
+In summary, the thought process involves analyzing the user's surface request, interpreting their deeper emotional and creative needs, ensuring the poem aligns with traditional and modern expectations of fall poetry, and anticipating how to engage the user further through feedback.
+
+---------- TextMessage (critic) ----------
+
+Your poem captures the essence of fall beautifully. It uses evocative imagery, particularly the rust-colored sunset, scattered leaves, and harvest moon, to create a vivid picture of the season. The themes of transition and preparation for winter are woven through the imagery effectively.
+
+I APPROVE.

@@ -1,0 +1,230 @@
+官方文档（需要魔法）：
+
+https://microsoft.github.io/autogen/stable/index.html
+
+没有魔法的使用这个代理后的文档：
+
+https://autogen.linsoap.social/autogen/stable/index.html
+
+1.环境准备
+1.项目创建
+参考文档：https://autogen.linsoap.social/autogen/stable/user-guide/agentchat-user-guide/installation.html
+
+能直接执行python3 -m venv .venv的，直接使用venv的方式创建项目
+
+有conda环境的参考文档中的conda创建项目
+
+2.Pip库安装
+安装autogen-agentchat和autogen-ext[openai]库
+
+pip install -U "autogen-agentchat"
+pip install "autogen-ext[openai]"
+完成环境搭建后开始了解Autogen这个框架
+
+2.Autogen框架核心概念
+1.多Agent协作形式
+coze目前基本上是基于工作流的形式去完成任务，现在行业的发展方向是使用多agent进行协作去完成任务，其核心思想是每一个Agent都是一个专家，专门做一个主题的事情。然后把这些专家组织起来，合理的分配任务，最终完成任务。其中专家就是Agent，这些专家组成的团队就叫Team。Autogen就是以这个思想设计的框架。
+
+2.Autogen是如何实现多Agent协作的
+Autogen是一个模块化的多智能体协作框架，可以像搭乐高一样排列组合出一个多智能体团队，其中有一些核心模块：
+
+模型客户端（用于配置大模型，选择要接入的大模型）
+
+单Agent（用于配置所选的大模型，可用工具，定制系统提示词）
+
+文档：https://autogen.linsoap.social/autogen/stable/user-guide/agentchat-user-guide/tutorial/agents.html
+
+Team（由多个单agent组成）
+
+文档：https://autogen.linsoap.social/autogen/stable/user-guide/agentchat-user-guide/tutorial/teams.html
+
+RoundRobinGroupChat
+
+SelectorGroupChat
+
+MegenticOneGourpChat
+
+Swarm
+
+Messages（与Agent和Team交互时产生的消息）
+
+文档：https://autogen.linsoap.social/autogen/stable/reference/python/autogen_agentchat.messages.html
+
+TextMessage
+
+ThoughEvent
+
+ToolCallRequestEvent
+
+ToolCallExecutionEvent
+
+终止条件 （让Team知道何时任务已经结束）
+
+文档：https://autogen.linsoap.social/autogen/stable/user-guide/agentchat-user-guide/tutorial/termination.html
+
+3.与单Agent进行对话
+文档：https://autogen.linsoap.social/autogen/stable/reference/python/autogen_agentchat.agents.html#autogen_agentchat.agents.AssistantAgent
+
+Assistant是最常用的Agent，首先观察AssistantAgent所支持的参数，
+
+
+
+对于定义一个简单的单Agent，其中比较关键的参数是
+
+name（agent名字）
+
+model_client（agent所调用的大模型）
+
+tools（agent所能使用的工具）
+
+system_message（系统提示词）
+
+description（对于这个Agent的描述，这个描述对于单Agent任务没有太大意义，但是对于多Agent协作有比较重要的作用）
+
+其中的name和description是字符串类型，随意取名都行。
+
+接下来需要配置model_client和tools，配置Agent所能调用的模型和工具
+
+1.model_client配置
+使用模型可以使用apikey，这里使用硅基流动作为模型提供商https://siliconflow.cn/，根据文档获取api_key,base_url,model_name
+
+硅基流动文档：
+
+获取base_url和model_name，https://docs.siliconflow.cn/cn/api-reference/chat-completions/chat-completions?playground=open
+
+获取APIKEY ，https://cloud.siliconflow.cn/account/ak
+
+如果不使用openai默认的几个模型，需要手动配置model_info
+
+model_info文档：https://autogen.linsoap.social/autogen/stable/reference/python/autogen_core.models.html#autogen_core.models.ModelInfo
+
+这里使用qwen3的模型，这个模型支持function_calling,structed_output。
+
+openai_client = OpenAIChatCompletionClient(
+    model="Qwen/Qwen3-30B-A3B",
+    api_key="你的apikey",
+    base_url="https://api.siliconflow.cn/v1/",
+    model_info={
+        "vision": False,
+        "function_calling": True,
+        "json_output": False,
+        "family": "qwen",
+        "structured_output": True,
+        "multiple_system_messages": True,
+    },
+)
+2.tools配置
+2.1 Autogen Tools
+参考文档：
+
+https://autogen.linsoap.social/autogen/stable/user-guide/agentchat-user-guide/tutorial/agents.html#function-tool
+
+这一步可以让模型拥有了除了简单对话之外的能力，例如获取当前的天气，写入文本到一个文件中。
+
+autogen支持把python函数作为agent的tools使用，例如这个获取天气的tools，其中有两个比较关键的部分，分别是传入参数和函数注释
+
+async def get_weather(city: str) -> str:
+    """根据传入的city返回当前城市的天气"""
+    return f" {city} 的天气是晴天，气温 25°C。" 
+这个函数的传入参数是city，这个工具的描述是"""根据传入的city返回当前城市的天气"""。这个工具描述需要描述这个函数需要传入的参数，以及这个函数的作用。这会注册到agent的工具库中，当agent根据上下文意识到需要获取天气信息，就会调用这个函数，以及调用这个函数需要生成什么样的参数，这都是通过函数注释告诉给agent的。
+
+2.2 MCP
+MCP的概念
+
+https://www.bilibili.com/video/BV1Cm7pzhExL/?spm_id_from=333.337.search-card.all.click
+
+https://modelcontextprotocol.io/introduction
+
+检查器
+
+https://modelcontextprotocol.io/docs/tools/inspector
+
+一些官方MCP样例
+
+https://modelcontextprotocol.io/examples
+
+Autogen同样也是支持MCP调用的，建议在使用Autogen的workbench的时候，先使用inspector检查环境是否能用MCP，再在workbench中使用。以下是在autogen中使用MCP的官方样例
+
+https://autogen.linsoap.social/autogen/stable/user-guide/agentchat-user-guide/tutorial/agents.html#model-context-protocol-mcp-workbench
+
+大家可以在官方的MCP样例中自己找一些感兴趣的尝试。不过需要注意，目前Autogen中MCP和Tool只能同时启用其中一个。
+
+3.Agent配置
+参考文档：
+
+https://autogen.linsoap.social/autogen/stable/user-guide/agentchat-user-guide/tutorial/agents.html#assistant-agent
+
+完成model_client和tools的配置后，就可以开始配置agent了
+
+name：目前对于单agent任务没有什么作用，主要在多agent中作为标识
+
+model_client：Agent所使用的模型
+
+tools：agent能够使用的tools
+
+system_message：agent的系统提示词，约定agent做什么样的任务
+
+agent = AssistantAgent(
+    name="assistant",
+    model_client=model_client,
+    tools=[get_weather],
+    system_message="在必要时使用工具解决用户的需求",
+)
+完成agent的配置后，可以使用run方法运行agent，参考文档https://autogen.linsoap.social/autogen/stable/user-guide/agentchat-user-guide/tutorial/agents.html#getting-result
+
+能够成功运行后，可以使用autogen的Console类在命令行中获取比较直观的输出结果，参考文档：https://autogen.linsoap.social/autogen/stable/user-guide/agentchat-user-guide/tutorial/agents.html#streaming-messages
+
+至此，单agent任务运行就已经完成了。
+
+下一步
+1.在单agent任务中，agent可以拥有不止一个tools，这个tools可以进行读操作，也可以进行写操作。编写更多的函数，丰富这个agent的能力。
+
+2.尝试修改system_message和函数注释，思考如何在agent拥有很多tools的时候，仍然能准确、正确的调用tools
+
+
+
+
+
+
+
+运行结果:
+
+(autogen) root@FerrW:~/autogen/learning-autogen# /root/miniconda3/envs/autogen/bin/python /root/autogen/learning-autogen/autogen-lab/utils/demo01/demo01.py
+---------- TextMessage (user) ----------
+杭州今天天气怎么样, 要戴口罩吗?
+---------- ModelClientStreamingChunkEvent (weather_agent) ----------
+<think>
+好的，我需要回答用户关于杭州今天天气的问题，以及是否需要戴口罩的建议。首先，用户询问天气，所以我应该调用get_weather函数，参数是杭州。然后，关于戴口罩的问题，可能需要查看湿度情况，因为高湿度可能影响口罩的使用，比如在雾霾或污染情况下。所以可能需要调用get_humidity函数，参数也是杭州。不过用户的问题是否需要同时调用两个函数呢？或者是否需要先获取天气信息，再根据天气情况决定是否需要湿度数据？比如，如果天气函数返回的信息中已经包含湿度，可能不需要单独调用。但根据提供的工具，两个函数是分开的，所以可能需要分别调用。但用户的问题中，是否戴口罩可能更多与空气质量或湿度有关，但工具里只有get_humidity。所以可能需要先获取天气，再获取湿度，然后综合判断。不过，可能用户更关心的是天气情况，比如是否有雨、风速，而戴口罩可能与空气质量相关，但工具中没有空气质量函数。所以可能只能根据湿度来回答。比如，如果湿度高，可能建议戴口罩，或者根据天气情况中的污染指数？但工具的描述里，get_weather的参数是城市，而get_humidity的参数也是城市。可能需要调用这两个函数，然后根据结果给出建议。不过用户的问题可能需要先获取天气，再获取湿度，或者可能只需要其中一个。现在需要确定是否需要同时调用两个函数。根据工具定义，两个函数都是可用的，所以可能需要分别调用。但用户的问题是否需要同时使用两个数据？比如，天气晴朗但湿度高，可能建议戴口罩？或者可能不需要？可能需要进一步分析。但根据现有工具，应该先调用get_weather获取天气情况，再调用get_humidity获取湿度，然后结合两者给出回答。不过，可能用户的问题只需要天气信息，而戴口罩的建议可能需要其他数据，但工具中没有，所以可能只能根据天气情况回答是否需要戴口罩。或者可能用户认为湿度高需要戴口罩？比如，如果湿度很高，可能空气潮湿，但不确定是否需要戴口罩。或者可能用户有其他考虑，比如雾霾，但工具中没有相关函数。所以可能需要先调用get_weather，如果天气函数返回的参数中有是否需要戴口罩的信息，或者根据天气状况（如雨天、多云等）来判断。但根据提供的工具，get_weather的参数是城市，而get_humidity是location。可能需要调用两个函数，然后综合给出建议。现在需要生成相应的工具调用。
+</think>
+
+
+---------- ToolCallRequestEvent (weather_agent) ----------
+[FunctionCall(id='0197542c605e4e11c46d09ea91d3d227', arguments=' {"city": "杭州"}', name='get_weather'), FunctionCall(id='0197542c64287da3f42979d7bf268cb7', arguments=' {"location": "杭州"}', name='get_humidity')]
+---------- ToolCallExecutionEvent (weather_agent) ----------
+[FunctionExecutionResult(content='杭州天气预报：多云，19℃', name='get_weather', call_id='0197542c605e4e11c46d09ea91d3d227', is_error=False), FunctionExecutionResult(content='杭州当前空气湿度：49%（舒适）', name='get_humidity', call_id='0197542c64287da3f42979d7bf268cb7', is_error=False)]
+---------- ModelClientStreamingChunkEvent (weather_agent) ----------
+<think>
+好的，用户问杭州今天天气怎么样，要不要戴口罩。首先，我需要调用天气接口获取杭州的天气情况。根据返回的数据，杭州今天是多云，温度19℃。然后，用户可能还关心湿度，所以接着调用湿度接口，得到湿度49%，属于舒适范围。
+
+接下来，分析是否需要戴口罩。天气多云和温度19℃通常不算极端，但可能要考虑其他因素，比如空气质量或污染情况。不过用户没有提到这些，可能只需要根据基本天气判断。湿度49%比较舒适，不太可能导致呼吸道不适，所以可能不需要戴口罩。但如果有其他潜在因素，比如花粉浓度或空气中污染物，可能需要建议。不过当前数据中没有这些信息，所以只能基于现有数据回答。
+
+用户可能在问口罩是因为担心空气质量，但如果没有相关数据，可能需要建议他们根据实际情况判断，比如如果有雾霾或污染，可能需要戴。但当前天气多云，湿度适中，可能不需要。另外，考虑到季节，如果是春季花粉多，可能建议戴。但信息不足的情况下，应该给出一般性建议，比如在空气质量较差时戴口罩，否则不需要。同时，提醒用户关注实时空气质量指数会更稳妥。
+</think>
+
+根据今天的天气预报，杭州是多云天气，气温19℃，空气湿度为49%（舒适）。这种情况下通常不需要戴口罩，但如果出现以下情况，建议根据需求决定是否佩戴：
+
+1. **空气质量较差**：若空气污染指数（AQI）较高（如PM2.5浓度超标），建议佩戴口罩；
+2. **特殊时期**：如花粉过敏季节、雾霾天气或呼吸道疾病高发期；
+3. **个人健康需求**：如有慢性呼吸道疾病或对空气质量敏感，可酌情佩戴。
+
+建议关注实时空气质量数据（如AQI）或气象预警信息，以更精准判断是否需要防护。
+---------- TextMessage (weather_agent) ----------
+
+
+根据今天的天气预报，杭州是多云天气，气温19℃，空气湿度为49%（舒适）。这种情况下通常不需要戴口罩，但如果出现以下情况，建议根据需求决定是否佩戴：
+
+1. **空气质量较差**：若空气污染指数（AQI）较高（如PM2.5浓度超标），建议佩戴口罩；
+2. **特殊时期**：如花粉过敏季节、雾霾天气或呼吸道疾病高发期；
+3. **个人健康需求**：如有慢性呼吸道疾病或对空气质量敏感，可酌情佩戴。
+
+建议关注实时空气质量数据（如AQI）或气象预警信息，以更精准判断是否需要防护。
