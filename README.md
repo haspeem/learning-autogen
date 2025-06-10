@@ -29,24 +29,3 @@ graph LR
 
 
 ​​当前学习位置​​：已完成Human-in-the-Loop部分，正在开发智能体围棋(五子棋)博弈系统
-
-
-git add README.md
-
-# 3. 提交更改
-git commit -m "更新README：添加项目历程和五子棋开发说明"
-
-# 4. 推送到远程仓库
-git push origin main
-图形化工具方法：
-​​VS Code​​：
-打开左侧源代码管理视图
-在更改列表中找到README.md文件
-点击"+"图标添加到暂存区
-输入提交消息并提交
-点击同步更改按钮推送
-​​GitHub Desktop​​：
-打开仓库
-在更改列表勾选README.md
-填写摘要并提交
-点击推送按钮
