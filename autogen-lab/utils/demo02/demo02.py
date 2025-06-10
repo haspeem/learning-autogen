@@ -11,8 +11,8 @@ import os
 load_dotenv()  
 api_key = os.environ["OPENAI_API_KEY"]
 model_client = OpenAIChatCompletionClient(
-model="deepseek-ai/DeepSeek-V2.5", # 必须与官方给的模型名称一致
-    base_url="https://api.siliconflow.cn/v1", # 调用API地址
+model="deepseek-ai/DeepSeek-V2.5", 
+    base_url="https://api.siliconflow.cn/v1", 
     api_key=api_key,
     model_info = {
         "vision": False,

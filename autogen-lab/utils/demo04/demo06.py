@@ -7,10 +7,10 @@ import asyncio
 from dotenv import load_dotenv
 import os
 load_dotenv()  
-api_key = os.environ["OPENAI_API_KEY"]
+api_key = os.environ["OPENAI_API_KEY"]  
 model_client = OpenAIChatCompletionClient(
-    model="deepseek-ai/DeepSeek-R1-0528-Qwen3-8B", # 必须与官方给的模型名称一致
-        base_url="https://api.siliconflow.cn/v1", # 调用API地址
+    model="deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
+        base_url="https://api.siliconflow.cn/v1",
         api_key=api_key,
         model_info = {
             "vision": False,
