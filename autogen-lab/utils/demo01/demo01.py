@@ -25,6 +25,14 @@ model_client = OpenAIChatCompletionClient(
     }
 )
 
+async def get_time() -> str:
+    return "It's now 8:10."
+
+async def get_date() -> str:
+    return "today is 2025-06-18"
+
+async def get_day() -> str:
+    return "today is Monday"
 
 # Define a simple function tool that the agent can use.
 # For this example, we use a fake weather tool for demonstration purposes.
@@ -44,7 +52,7 @@ async def get_weather(city: str) -> str:
 agent = AssistantAgent(
     name="weather_agent",
     model_client=model_client,
-    tools=[get_humidity ,get_weather],
+    tools=[get_humidity ,get_weather, get_time, get_date, get_day],
     system_message="You are a helpful assistant.",
     reflect_on_tool_use=True,
     model_client_stream=True,  # Enable streaming tokens from the model client.
@@ -53,7 +61,7 @@ agent = AssistantAgent(
 
 # Run the agent and stream the messages to the console.
 async def main() -> None:
-    await Console(agent.run_stream(task="杭州今天天气怎么样, 要戴口罩吗?"))
+    await Console(agent.run_stream(task="现在是什么时候? 杭州今天天气怎么样, 要戴口罩吗? "))
     # Close the connection to the model client.
     await model_client.close()
 
