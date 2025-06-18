@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 import os
 load_dotenv()  
 api_key = os.environ["OPENAI_API_KEY"]
-model_client = OpenAIChatCompletionClient(
+model_client = OpenAIChatCompletionClient(          #模型参数
 model="deepseek-ai/DeepSeek-V2.5", 
     base_url="https://api.siliconflow.cn/v1", 
     api_key=api_key,
@@ -23,25 +23,21 @@ model="deepseek-ai/DeepSeek-V2.5",
         "multiple_system_messages": False,
     }
 )
-
-# Create the primary agent.                 
-primary_agent = AssistantAgent(
+                
+primary_agent = AssistantAgent(     
     "primary",
     model_client=model_client,
     system_message="You are a helpful AI assistant.",
 )
-
-# Create the critic agent.                  
+                 
 critic_agent = AssistantAgent(
     "critic",
     model_client=model_client,
     system_message="Provide constructive feedback. Respond with 'APPROVE' to when your feedbacks are addressed.",   #提示ai使用approve
 )
 
-# Define a termination condition that stops the task if the critic approves.
 text_termination = TextMentionTermination("APPROVE")        #检测到approve时停止
 
-# Create a team with the primary and critic agents.
 team = RoundRobinGroupChat([primary_agent, critic_agent], termination_condition=text_termination)
 
 async def main() -> None:
