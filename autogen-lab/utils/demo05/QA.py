@@ -88,7 +88,7 @@ async def main() -> None:
     with open("learning-autogen/autogen-lab/utils/coding/team_state1.json", "r") as f:
         team_state = json.load(f)
     await team.load_state(team_state)
-    stream = team.run_stream(task="我的上一个问题是什么")
+    stream = team.run_stream(task="我上个月买的一件T恤掉色了, 我想要获取赔偿")
     await Console(stream)
     team_state = await team.save_state()
     with open("learning-autogen/autogen-lab/utils/coding/team_state1.json", "w") as f:
